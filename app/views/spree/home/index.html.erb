@@ -1,22 +1,61 @@
-<script type="text/x-handlebars">
-  {{outlet}}
-</script>
+<div id='content'></div>
+<script type="text/jsx">
+/** @jsx React.DOM */
 
-<script type="text/x-handlebars" id="index">
-  <div id="products" class="row" data-hook>
-    {{#each}}
-      <div id="product_{{ unbound product.id }}" class="col-md-3 col-sm-6" data-hook="products_list_item" itemscope itemtype="http://schema.org/Product">
-        <div class="panel panel-default">
-          <div class="panel-body text-center product-body">
-            {{#link-to 'product' this}}
-              {{master.name}}
-            {{/link-to}}
+var ProductsList = React.createClass({
+  getInitialState: function() {
+     return {data: { products: []}};
+  },
+  componentWillMount: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  render: function() {
+    var productNodes = this.state.data.products.map(function (product) {
+      return <Product name={product.name} 
+                      key={product.id}
+                      display_price={product.display_price}
+                      image={product.master.images[0].urls.small}>
+               {product.name}
+             </Product>;
+    });
+
+    return (
+      <div className="row">
+        {productNodes}
+      </div>
+    );
+  }
+});
+
+var Product = React.createClass({
+  render: function() {
+    return (
+      <div className="col-md-3 col-sm-6" data-hook="products_list_item" itemscope itemtype="http://schema.org/Product">
+        <div className="panel panel-default">
+          <div className="panel-body text-center product-body">
+            <img src={this.props.image} /><br />
+            {this.props.name}
           </div>
-          <div class="panel-footer text-center">
-            <span class="price selling lead" itemprop="price">{{ display_price }}</span>
+          <div className="panel-footer text-center">
+            <span className="price selling lead" itemprop="price">{this.props.display_price}</span>
           </div>
         </div>
       </div>
-    {{/each}}
-  </div>
+    );
+  }
+});
+
+React.renderComponent(
+  <ProductsList url="http://localhost:3000/api/products?token=fake" />,
+  document.getElementById("content")
+);
 </script>

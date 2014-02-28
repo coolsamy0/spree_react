@@ -1,10 +1,10 @@
 module Spree
-  module Ember
+  module React
     module Frontend
     end
   end
 end
 
-require 'spree/ember/frontend/engine'
+require 'spree/react/frontend/engine'
 
 require 'bootstrap-sass'
